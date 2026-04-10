@@ -13,9 +13,10 @@ export const Footer = () => {
                     </div>
 
                     <div>
-                        <h4 class="text-white font-semibold mb-4">Library</h4>
+                        <h4 class="text-white font-semibold mb-4">QuickLinks</h4>
                         <ul class="text-gray-500 text-sm space-y-2">
                             <li><a href="/" data-link class="hover:text-yellow-500 transition">Dashboard</a></li>
+                            <li><a href="/login" data-link class="hover:text-yellow-500 transition">Login</a></li>
                             <li><a href="/movies" data-link class="hover:text-yellow-500 transition">Movies</a></li>
                             <li><a href="/tv" data-link class="hover:text-yellow-500 transition">TV Shows</a></li>
                             <li><a href="/music" data-link class="hover:text-yellow-500 transition">Music</a></li>

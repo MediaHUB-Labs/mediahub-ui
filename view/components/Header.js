@@ -1,8 +1,8 @@
 export const Header = () => {
     return `
-        <div class="flex items-center justify-between h-full px-8 py-2 bg-[#111] backdrop-blur-md border-b border-white/5">
+        <div class="flex items-center justify-between h-full px-8 py-4 bg-[#111] backdrop-blur-md border-b border-white/5">
             <div class="flex items-center gap-4">
-                <div class="text-yellow-500 font-bold text-xl cursor-pointer"> Media HUB </div>
+                <div class="text-yellow-500 font-bold text-2xl cursor-pointer"> Media HUB </div>
             </div>
             <div class="flex flex-1 justify-end tems-center gap-6">
                 <div class="relative w-full max-w-sm">
