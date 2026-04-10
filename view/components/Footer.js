@@ -1,6 +1,8 @@
+import { Connection } from '../../src/connection/Connection.js';
+
 export const Footer = () => {
-    return `
-        <footer class="bg-[#111] border-t border-white/5 pt-12 pb-8 mt-12">
+    const html = `
+        <footer class="bg:-gray-300 dark:bg-[#111] border-t border-white/5 pt-12 pb-8 mt-12">
             <div class="max-w-7xl mx-auto px-8">
                 <div class="grid grid-cols-1 md:grid-cols-4 gap-12 mb-12">
                     
@@ -13,18 +15,18 @@ export const Footer = () => {
                     </div>
 
                     <div>
-                        <h4 class="text-white font-semibold mb-4">QuickLinks</h4>
+                        <h4 class="text-black dark:text-white font-semibold mb-4">QuickLinks</h4>
                         <ul class="text-gray-500 text-sm space-y-2">
                             <li><a href="/" data-link class="hover:text-yellow-500 transition">Dashboard</a></li>
                             <li><a href="/login" data-link class="hover:text-yellow-500 transition">Login</a></li>
                             <li><a href="/movies" data-link class="hover:text-yellow-500 transition">Movies</a></li>
-                            <li><a href="/tv" data-link class="hover:text-yellow-500 transition">TV Shows</a></li>
+                            <li><a href="/docs" data-link class="hover:text-yellow-500 transition">documents</a></li>
                             <li><a href="/music" data-link class="hover:text-yellow-500 transition">Music</a></li>
                         </ul>
                     </div>
 
                     <div>
-                        <h4 class="text-white font-semibold mb-4">Server Status</h4>
+                        <h4 class="text-black dark:text-white font-semibold mb-4">Server Status</h4>
                         <div class="flex items-center gap-2 mb-2">
                             <span id="server-status-indicator" class="w-2 h-2 bg-gray-500 rounded-full"></span>
                             <span id="server-status-text" class="text-sm text-gray-400">Checking...</span>
@@ -43,6 +45,17 @@ export const Footer = () => {
             </div>
         </footer>
     `;
+    const init = async () => {
+        const serverStatusIndicator = document.getElementById('server-status-indicator');
+        const serverStatusText = document.getElementById('server-status-text');
+
+        const status = await Connection();
+
+        // Update the UI dynamically
+        serverStatusIndicator.className = `w-2 h-2 rounded-full animate-pulse ${status.color}`;
+        serverStatusText.innerText = `Server: ${status.status}`;
+    }
+    return { html, init };
 };
 
 {/* <div>
