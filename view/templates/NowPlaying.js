@@ -1,5 +1,5 @@
 export const NowPlaying = () => {
-    return `
+    const html = `
         <div class="flex items-center justify-between h-24 px-6 bg-[#121212] border-t border-white/5">
             <div class="flex items-center w-1/4 gap-4">
                 <div class="w-12 h-16 bg-white/10 rounded overflow-hidden flex-shrink-0">
@@ -37,4 +37,9 @@ export const NowPlaying = () => {
             </div>
         </div>
     `;
+    const init = () => {
+        
+    };
+    return { html, init };
+
 };

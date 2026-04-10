@@ -2,11 +2,10 @@ import { CONFIG } from '../../src/global/config.js';
 import { App } from '../../App.js';
 
 export const AuthView = (mode = 'login') => {
-    const root = document.getElementById('root');
     const isLogin = mode === 'login';
 
-    root.innerHTML = `
-        <div class="flex items-center justify-center min-h-[80vh] px-4 animate-in fade-in duration-300">
+    const html = `
+        <div class="flex items-center justify-center min-h-[80vh] p-4 animate-in fade-in duration-300">
             <div class="w-full max-w-md bg-[#1a1a1a] p-10 rounded-3xl border border-white/5 shadow-2xl">
                 
                 <div class="text-center mb-10">
@@ -52,45 +51,53 @@ export const AuthView = (mode = 'login') => {
         </div>
     `;
 
-    bindAuthEvents(isLogin);
-};
+    // The init function handles all event listeners after the HTML is injected
+    const init = () => {
+        const form = document.getElementById('auth-form');
+        const toggleBtn = document.getElementById('toggle-auth');
 
-function bindAuthEvents(isLogin) {
-    const form = document.getElementById('auth-form');
-    const toggleBtn = document.getElementById('toggle-auth');
+        // Toggle between Login/Signup
+        toggleBtn?.addEventListener('click', () => {
+            const nextMode = isLogin ? 'register' : 'login';
+            const nextPath = isLogin ? '/signup' : '/login';
+            
+            // Update URL without reload
+            window.history.pushState({}, "", nextPath);
+            
+            // Use App's component renderer to swap the view
+            App.renderComponent('root', AuthView(nextMode));
+        });
 
-    toggleBtn?.addEventListener('click', () => {
-        AuthView(isLogin ? 'register' : 'login');
-    });
+        // Handle Form Submission
+        form?.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            
+            const formData = new FormData(form);
+            const payload = Object.fromEntries(formData.entries());
+            const endpoint = isLogin ? CONFIG.ENDPOINTS.LOGIN : CONFIG.ENDPOINTS.SIGNUP;
 
-    form?.addEventListener('submit', async (e) => {
-        e.preventDefault();
-        
-        // Form data to Object
-        const formData = new FormData(form);
-        const payload = Object.fromEntries(formData.entries());
+            try {
+                const response = await fetch(`${CONFIG.API_BASE_URL}${endpoint}`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(payload)
+                });
 
-        // Determine Go Endpoint based on mode
-        const endpoint = isLogin ? CONFIG.ENDPOINTS.LOGIN : CONFIG.ENDPOINTS.SIGNUP;
+                const result = await response.json();
 
-        try {
-            const response = await fetch(`${CONFIG.API_BASE_URL}${endpoint}`, {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify(payload)
-            });
-
-            const result = await response.json();
-
-            if (response.ok) {
-                localStorage.setItem('token',result.data.token);
-                window.history.pushState({}, "", "/");
-                App.router();
-            } else {
-                console.error(`Error: ${result.error || 'Authentication failed'}`);
+                if (response.ok) {
+                    localStorage.setItem('token', result.data.token);
+                    localStorage.setItem('user', JSON.stringify(result.data.User));
+                    // Hard refresh to home to reset App state/Header
+                    window.location.href = "/";
+                } else {
+                    alert(`Error: ${result.error || 'Authentication failed'}`);
+                }
+            } catch (err) {
+                console.error("Auth Request Failed:", err);
             }
-        } catch (err) {
-            console.error("Auth Request Failed:", err);
-        }
-    });
-}
+        });
+    };
+
+    return { html, init };
+};
