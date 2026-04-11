@@ -1,0 +1,52 @@
+@import "tailwindcss";
+
+@theme {
+  /* Brand Colors */
+  --color-dark-bg: #0f0f0f;
+}
+
+@custom-variant dark (&:where(.dark, .dark *));
+
+/* --- Base Layer (Defaults) --- */
+@layer base {
+  * {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+  }
+
+  html {
+    /* Smooth transitions for theme switching */
+    transition: background-color 0.3s ease, color 0.3s ease;
+    scroll-behavior: smooth;
+  }
+
+  body { 
+    /* Default spacing & Layout */
+    line-height: 1.5;
+    overflow-x: hidden;
+  }
+
+  /* Typography Defaults */
+  h1, h2, h3, h4, h5, h6 {
+    font-weight: 700;
+    letter-spacing: -0.025em;
+  }
+
+  /* Custom Scrollbar for a "Vault" look */
+  ::-webkit-scrollbar {
+    width: 8px;
+  }
+
+  ::-webkit-scrollbar-track {
+    background: transparent;
+  }
+
+  ::-webkit-scrollbar-thumb {
+    @apply bg-gray-300 dark:bg-white/10 rounded-full;
+  }
+
+  ::-webkit-scrollbar-thumb:hover {
+    @apply bg-gray-400 dark:bg-white/20;
+  }
+}
