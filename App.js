@@ -12,7 +12,8 @@ import { Player } from './view/pages/Player.js';
 import { Playlist } from './view/pages/Playlist.js';
 import { Videos } from './view/pages/Videos.js';
 import { Profile } from './view/pages/Profile.js';
-import { initTheme, toggleTheme } from './src/utils/theme.js';
+import { initTheme } from './src/utils/theme.js';
+import { isLoggedIn } from './src/utils/auth.js';
 
 export const App = {
     async init() {
@@ -44,9 +45,20 @@ export const App = {
 
     router() {
         const path = window.location.pathname;
+        const loggedIn = isLoggedIn();
 
         // Cleanup: pause any playing DOM video/audio elements to prevent ghost playback when detached
         document.querySelectorAll('video').forEach(media => media.pause());
+
+        // Define private routes
+        const privateRoutes = ['/movies', '/music', '/videos', '/photos', '/docs', '/profile', '/player/', '/playlist/'];
+        const isPrivate = privateRoutes.some(route => path.startsWith(route));
+
+        if (isPrivate && !loggedIn) {
+            window.history.pushState({}, "", "/login");
+            this.router();
+            return;
+        }
 
         // Static routes
         const routes = {
@@ -100,8 +112,12 @@ export const App = {
             if (anchor) {
                 e.preventDefault();
                 const href = anchor.getAttribute('href');
-                if (href && href !== window.location.pathname) {
-                    window.history.pushState({}, "", href);
+                if (href) {
+                    // Always update history and run router, even if same path 
+                    // (useful for re-initializing components upon "Sign In" clicks)
+                    if (href !== window.location.pathname) {
+                        window.history.pushState({}, "", href);
+                    }
                     this.router();
                 }
             }

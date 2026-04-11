@@ -12,7 +12,6 @@ import { showToast } from '../components/Toast.js';
  * Total rework of UI and Logic
  */
 export const Playlist = (playlistId) => {
-    if (!requireAuth()) return { html: '', init: () => { } };
 
     const html = `
         <div id="playlist-view" class="relative min-h-screen bg-gray-50 dark:bg-[#0a0a0a] transition-colors duration-500 overflow-x-hidden">

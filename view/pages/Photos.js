@@ -6,7 +6,6 @@ import { MediaNav } from '../components/MediaNav.js';
 import { formatDate, formatFileSize } from '../../src/utils/format.js';
 
 export const Photos = () => {
-    if (!requireAuth()) return { html: '', init: () => { } };
 
     const html = `
         <div class="w-full mx-auto px-4 sm:px-6 lg:px-8 py-6">
