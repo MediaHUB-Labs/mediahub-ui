@@ -29,12 +29,7 @@ export const logout = () => {
  * Returns true if authenticated, false (and redirects) if not.
  */
 export const requireAuth = () => {
-    if (!isLoggedIn()) {
-        window.history.pushState({}, '', '/login');
-        window.dispatchEvent(new PopStateEvent('popstate'));
-        return false;
-    }
-    return true;
+    return isLoggedIn();
 };
 
 /** Get user initials for avatar display */

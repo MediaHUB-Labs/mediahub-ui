@@ -5,7 +5,6 @@ import { showToast } from '../components/Toast.js';
 import { formatDate } from '../../src/utils/format.js';
 
 export const Profile = () => {
-    if (!requireAuth()) return { html: '', init: () => {} };
 
     const user = getUser();
 
@@ -28,7 +27,7 @@ export const Profile = () => {
                     <p class="text-gray-400 dark:text-gray-500 text-xs mt-1">Member since ${formatDate(user?.created_at)}</p>
 
                     <!-- Edit Form -->
-                    <form id="profile-form" class="mt-8 space-y-5">
+                    <form id="profile-form" class="mt-8 space-y-5 w-full md:w-1/2">
                         <div class="grid grid-cols-2 gap-4">
                             <div>
                                 <label class="block text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase mb-1.5 tracking-wider">First Name</label>
@@ -49,7 +48,7 @@ export const Profile = () => {
                         </div>
 
                         <button type="submit" id="save-profile-btn"
-                            class="w-full bg-gray-900 dark:bg-white text-white dark:text-black font-bold py-2.5 rounded-xl hover:bg-orange-600 dark:hover:bg-yellow-500 transition-all text-sm">
+                            class="px-2 cursor-pointer bg-gray-900 dark:bg-white text-white dark:text-black font-bold py-2.5 rounded-xl hover:bg-orange-600 dark:hover:bg-yellow-500 transition-all text-sm">
                             Save Changes
                         </button>
                     </form>
@@ -57,7 +56,7 @@ export const Profile = () => {
                     <!-- Danger Zone -->
                     <div class="mt-10 pt-6 border-t border-gray-100 dark:border-white/5">
                         <h3 class="text-sm font-bold text-red-500 uppercase tracking-wider mb-4">Danger Zone</h3>
-                        <button id="logout-profile-btn" class="px-5 py-2 border border-red-200 dark:border-red-500/20 text-red-500 rounded-xl text-sm font-medium hover:bg-red-50 dark:hover:bg-red-500/10 transition">
+                        <button id="logout-profile-btn" class="px-5 py-2 cursor-pointer border border-red-200 dark:border-red-500/20 text-red-500 rounded-xl text-sm font-medium hover:bg-red-50 dark:hover:bg-red-500/10 transition">
                             Sign Out
                         </button>
                     </div>
