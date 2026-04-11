@@ -1,8 +1,17 @@
 import { Header } from './view/components/Header.js';
 import { Footer } from './view/components/Footer.js';
+import { AudioPlayerBar } from './view/components/AudioPlayer.js';
 import { Home } from './view/Home.js';
 import { AuthView } from './view/pages/Auth.js';
 import { PageNotFound } from './view/pages/404.js';
+import { Movies } from './view/pages/Movies.js';
+import { Music } from './view/pages/Music.js';
+import { Photos } from './view/pages/Photos.js';
+import { Documents } from './view/pages/Documents.js';
+import { Player } from './view/pages/Player.js';
+import { Playlist } from './view/pages/Playlist.js';
+import { Videos } from './view/pages/Videos.js';
+import { Profile } from './view/pages/Profile.js';
 import { initTheme, toggleTheme } from './src/utils/theme.js';
 
 export const App = {
@@ -12,9 +21,9 @@ export const App = {
         // Render Persistent Components
         this.renderComponent('header-container', Header());
         this.renderComponent('footer-container', Footer());
+        this.renderComponent('audio-player-container', AudioPlayerBar());
         
         this.handleNavigation();
-        this.bindTheme();
         this.router();
 
         window.addEventListener('popstate', () => this.router());
@@ -25,22 +34,62 @@ export const App = {
         const container = document.getElementById(containerId);
         if (!container || !component) return;
 
-        container.innerHTML = component.html;
-        if (component.init) component.init();
+        if (typeof component === 'string') {
+            container.innerHTML = component;
+        } else {
+            container.innerHTML = component.html;
+            if (component.init) component.init();
+        }
     },
 
     router() {
         const path = window.location.pathname;
+
+        // Cleanup: pause any playing DOM video/audio elements to prevent ghost playback when detached
+        document.querySelectorAll('video').forEach(media => media.pause());
+
+        // Static routes
         const routes = {
             '/': () => Home(),
             '/login': () => AuthView('login'),
             '/signup': () => AuthView('register'),
-            '/movies': () => ({ html: '<h1>Movies</h1>', init: () => {} }),
+            '/movies': () => Movies(),
+            '/music': () => Music(),
+            '/videos': () => Videos(),
+            '/photos': () => Photos(),
+            '/docs': () => Documents(),
+            '/profile': () => Profile(),
         };
 
-        const componentFunc = routes[path] || PageNotFound;
-        const component = componentFunc();
+        // Check static routes first
+        if (routes[path]) {
+            const component = routes[path]();
+            this.renderComponent('root', component);
+            window.scrollTo(0, 0);
+            return;
+        }
 
+        // Dynamic routes (pattern matching)
+        const playerMatch = path.match(/^\/player\/(\d+)$/);
+        if (playerMatch) {
+            const mediaId = playerMatch[1];
+            const component = Player(mediaId);
+            this.renderComponent('root', component);
+            window.scrollTo(0, 0);
+            return;
+        }
+
+        const playlistMatch = path.match(/^\/playlist\/(\d+)$/);
+        if (playlistMatch) {
+            const playlistId = playlistMatch[1];
+            const component = Playlist(playlistId);
+            this.renderComponent('root', component);
+            window.scrollTo(0, 0);
+            return;
+        }
+
+        // 404 fallback
+        const component = PageNotFound();
         this.renderComponent('root', component);
         window.scrollTo(0, 0);
     },
@@ -50,16 +99,18 @@ export const App = {
             const anchor = e.target.closest('a[data-link]');
             if (anchor) {
                 e.preventDefault();
-                window.history.pushState({}, "", anchor.getAttribute('href'));
-                this.router();
+                const href = anchor.getAttribute('href');
+                if (href && href !== window.location.pathname) {
+                    window.history.pushState({}, "", href);
+                    this.router();
+                }
             }
         });
     },
 
-    bindTheme() {
-        document.addEventListener('click', (e) => {
-            if (e.target.closest('#theme-toggle')) toggleTheme();
-        });
+    /** Re-render the header (e.g., after login/logout to update user state) */
+    refreshHeader() {
+        this.renderComponent('header-container', Header());
     }
 };
 
