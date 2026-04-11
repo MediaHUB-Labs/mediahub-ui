@@ -72,8 +72,11 @@ export const Header = () => {
                             </button>
                         </div>
                     ` : `
-                        <a href="/login" data-link class="text-xs font-bold uppercase tracking-widest px-5 py-2.5 bg-gray-900 dark:bg-white text-white dark:text-black rounded-xl hover:bg-orange-600 dark:hover:bg-yellow-500 dark:hover:text-black transition-all shadow-md">
-                            Sign In
+                        <a href="/login" data-link class="flex items-center gap-2 text-xs font-bold uppercase px-3 md:px-5 py-2 md:py-2.5 bg-gray-900 dark:bg-white text-white dark:text-black rounded-xl hover:bg-orange-600 dark:hover:bg-yellow-500 dark:hover:text-black transition-all shadow-md group">
+                            <svg class="w-4 h-4 group-hover:translate-x-0.5 transition-transform" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" d="M15.75 9V5.25A2.25 2.25 0 0013.5 3h-6a2.25 2.25 0 00-2.25 2.25v13.5A2.25 2.25 0 007.5 21h6a2.25 2.25 0 002.25-2.25V15M12 9l-3 3m0 0l3 3m-3-3h12.75" />
+                            </svg>
+                            <span class="hidden md:inline">Sign In</span>
                         </a>
                     `}
                 </div>

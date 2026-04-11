@@ -89,7 +89,21 @@ const startPlayback = (media) => {
     window.dispatchEvent(new CustomEvent('trackchanged', { detail: media }));
 
     audio.play().catch(err => {
-        console.error('Playback failed. This usually means the browser blocked autoplay or the file format is unsupported.', err);
+        console.warn('Autoplay blocked or playback failed. Waiting for user interaction...', err);
+        _isPlaying = false;
+        updatePlayerUI();
+        
+        // Add a "tap to play" pulse effect to the play button
+        const playBtn = document.getElementById('audio-play-btn');
+        if (playBtn) {
+            playBtn.classList.add('animate-pulse', 'ring-4', 'ring-purple-500/50');
+            const clickHandler = () => {
+                audio.play();
+                playBtn.classList.remove('animate-pulse', 'ring-4', 'ring-purple-500/50');
+                playBtn.removeEventListener('click', clickHandler);
+            };
+            playBtn.addEventListener('click', clickHandler);
+        }
     });
 
     showPlayer();
