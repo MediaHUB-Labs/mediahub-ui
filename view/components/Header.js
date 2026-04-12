@@ -4,6 +4,7 @@ import { getInitials, getUser, isLoggedIn } from '../../src/utils/auth.js';
 import { toggleTheme } from '../../src/utils/theme.js';
 import { showUploadModal } from './UploadModal.js';
 import { playPlaylist } from './AudioPlayer.js';
+import { ICONS } from '../../src/utils/icons.js';
 
 export const Header = () => {
     const user = getUser();
@@ -37,7 +38,7 @@ export const Header = () => {
                 <!-- Search -->
                 <div class="relative w-full max-w-sm group" id="search-wrapper">
                     <span class="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400">
-                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path></svg>
+                        <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" viewBox="0 0 24 24">${ICONS.search}</svg>
                     </span>
                     <input type="text" id="global-search-input"
                         class="w-full py-2 pl-10 pr-4 bg-gray-100 dark:bg-white/5 border border-transparent dark:border-white/10 rounded-full text-sm text-gray-900 dark:text-white focus:outline-none focus:bg-white dark:focus:bg-white/10 focus:ring-2 focus:ring-orange-500 dark:focus:ring-yellow-500 focus:border-transparent transition-all" 
@@ -51,8 +52,8 @@ export const Header = () => {
                     ${user ? `
                         <!-- Upload FAB -->
                         <button id="header-upload-btn" class="p-2. rounded-xl bg-gray-100 dark:bg-white/10 hover:bg-orange-100 dark:hover:bg-yellow-500/10 text-gray-500 hover:text-orange-600 dark:hover:text-yellow-500 transition-all border border-gray-200 dark:border-white/10" title="Upload">
-                            <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" d="M12 4v16m8-8H4" />
+                            <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" viewBox="0 0 24 24">
+                                ${ICONS.plus}
                             </svg>
                         </button>
 
@@ -66,7 +67,7 @@ export const Header = () => {
                             </a>
 
                             <button id="logout-btn" class="p-2 text-gray-400 hover:text-red-500 transition-colors" title="Log Out">
-                                <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                                <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" viewBox="0 0 24 24">
                                     <path d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"></path>
                                 </svg>
                             </button>
