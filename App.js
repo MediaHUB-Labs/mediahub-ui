@@ -12,8 +12,12 @@ import { Player } from './view/pages/Player.js';
 import { Playlist } from './view/pages/Playlist.js';
 import { Videos } from './view/pages/Videos.js';
 import { Profile } from './view/pages/Profile.js';
+import { EditMedia } from './view/pages/EditMedia.js';
 import { initTheme } from './src/utils/theme.js';
 import { isLoggedIn } from './src/utils/auth.js';
+import { post } from './src/global/api.js';
+import { CONFIG } from './src/global/config.js';
+import { showToast } from './view/components/Toast.js';
 
 export const App = {
     async init() {
@@ -51,7 +55,7 @@ export const App = {
         document.querySelectorAll('video').forEach(media => media.pause());
 
         // Define private routes
-        const privateRoutes = ['/movies', '/music', '/videos', '/photos', '/docs', '/profile', '/player/', '/playlist/'];
+        const privateRoutes = ['/movies', '/music', '/videos', '/photos', '/docs', '/profile', '/player/', '/playlist/', '/edit/'];
         const isPrivate = privateRoutes.some(route => path.startsWith(route));
 
         if (isPrivate && !loggedIn) {
@@ -100,6 +104,15 @@ export const App = {
             return;
         }
 
+        const editMatch = path.match(/^\/edit\/(\d+)$/);
+        if (editMatch) {
+            const mediaId = editMatch[1];
+            const component = EditMedia(mediaId);
+            this.renderComponent('root', component);
+            window.scrollTo(0, 0);
+            return;
+        }
+
         // 404 fallback
         const component = PageNotFound();
         this.renderComponent('root', component);
@@ -107,7 +120,35 @@ export const App = {
     },
 
     handleNavigation() {
-        document.addEventListener('click', (e) => {
+        document.addEventListener('click', async (e) => {
+            const transcodeBtn = e.target.closest('.transcode-grid-btn');
+            if (transcodeBtn) {
+                e.preventDefault();
+                e.stopPropagation();
+                
+                const mediaId = transcodeBtn.getAttribute('data-media-id');
+                const originalText = transcodeBtn.textContent;
+                
+                transcodeBtn.disabled = true;
+                transcodeBtn.innerText = 'Starting...';
+                transcodeBtn.classList.add('opacity-70', 'pointer-events-none');
+                
+                const res = await post(`${CONFIG.ENDPOINTS.MEDIA_TRANSCODE}/${mediaId}`);
+                if (!res?.success) {
+                    showToast(res?.error || 'Failed to start transcoding', 'error');
+                    transcodeBtn.disabled = false;
+                    transcodeBtn.classList.remove('opacity-70', 'pointer-events-none');
+                    transcodeBtn.innerText = 'Convert to HLS';
+                    return;
+                }
+                
+                showToast('Transcoding started in background', 'info');
+                transcodeBtn.innerText = 'Transcoding...';
+                transcodeBtn.classList.add('animate-pulse');
+                
+                return;
+            }
+
             const anchor = e.target.closest('a[data-link]');
             if (anchor) {
                 e.preventDefault();

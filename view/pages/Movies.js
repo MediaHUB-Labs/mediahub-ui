@@ -4,6 +4,7 @@ import { requireAuth, isLoggedIn } from '../../src/utils/auth.js';
 import { MediaGrid, MediaGridSkeleton, MediaGridEmpty } from '../components/MediaGrid.js';
 import { showUploadModal } from '../components/UploadModal.js';
 import { MediaNav } from '../components/MediaNav.js';
+import { ICONS } from '../../src/utils/icons.js';
 import { showToast } from '../components/Toast.js';
 
 export const Movies = () => {
@@ -14,11 +15,19 @@ export const Movies = () => {
             ${MediaNav()}
             <!-- Page Header -->
             <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6">
-                <div>
-                    <h1 class="text-3xl font-extrabold text-gray-900 dark:text-white tracking-tight">
-                        <span class="text-orange-600 dark:text-yellow-500">🎬</span> Movies
-                    </h1>
-                    <p class="text-gray-500 dark:text-gray-400 text-sm mt-1">Browse and stream your movie collection</p>
+                <div class="flex items-center gap-4">
+                    <a href="/" data-link class="p-2.5 bg-gray-100 dark:bg-white/5 text-gray-400 hover:text-orange-600 dark:hover:text-yellow-500 rounded-xl transition-all active:scale-90" title="Back to Dashboard">
+                        <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="3" viewBox="0 0 24 24"><path d="M15 19l-7-7 7-7"/></svg>
+                    </a>
+                    <div class="flex items-center gap-4">
+                        <div class="w-12 h-12 bg-blue-600 rounded-2xl flex items-center justify-center shadow-lg shadow-blue-500/20">
+                            <svg class="w-6 h-6 text-white" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" viewBox="0 0 24 24">${ICONS.movie}</svg>
+                        </div>
+                        <div>
+                            <h1 class="text-3xl font-extrabold text-gray-900 dark:text-white tracking-tight">Movies</h1>
+                            <p class="text-gray-500 dark:text-gray-400 text-sm mt-1">Cinematic collection in your vault</p>
+                        </div>
+                    </div>
                 </div>
                 ${loggedIn ? `
                 <button id="movies-upload-btn" class="flex items-center gap-2 bg-gray-900 dark:bg-white text-white dark:text-black px-5 py-2.5 rounded-xl font-bold text-sm hover:bg-orange-600 dark:hover:bg-yellow-500 dark:hover:text-black transition-all shadow-lg">
@@ -86,6 +95,7 @@ export const Movies = () => {
 
             const params = {
                 type: 'video',
+                category: 'Movie',
                 limit,
                 offset: currentOffset,
             };
@@ -120,7 +130,7 @@ export const Movies = () => {
             const res = await get(CONFIG.ENDPOINTS.MEDIA_SEARCH, { q: query, limit: 50 });
             const content = document.getElementById('movies-content');
             if (res?.success) {
-                const items = (res.data?.items || []).filter(i => i.mime_type?.startsWith('video/'));
+                const items = (res.data?.items || []).filter(i => i.mime_type?.startsWith('video/') && i.category === 'Movie');
                 content.innerHTML = items.length > 0 ? MediaGrid(items) : MediaGridEmpty('No results found', 'search');
                 document.getElementById('movies-load-more').classList.add('hidden');
             }

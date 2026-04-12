@@ -4,24 +4,90 @@ import { requireAuth, isLoggedIn } from '../../src/utils/auth.js';
 import { formatDuration, formatFileSize, formatDate } from '../../src/utils/format.js';
 import { showToast } from '../components/Toast.js';
 import { pauseAudioDock } from '../components/AudioPlayer.js';
+import { ICONS } from '../../src/utils/icons.js';
 
 /**
  * Video Player Page — full-screen player with progress tracking.
  */
+
+/**
+ * Switches the video player to HLS playback using hls.js (lazy-loaded).
+ * Falls back to native playback for Safari which supports HLS natively.
+ */
+const switchToHLS = async (mediaId, videoEl) => {
+    const hlsUrl = `${CONFIG.API_BASE_URL}${CONFIG.ENDPOINTS.MEDIA_HLS}/${mediaId}`;
+    const currentTime = videoEl.currentTime;
+    const wasPaused = videoEl.paused;
+
+    // Native HLS support (Safari, iOS)
+    if (videoEl.canPlayType('application/vnd.apple.mpegurl')) {
+        videoEl.src = hlsUrl;
+        videoEl.currentTime = currentTime;
+        if (!wasPaused) videoEl.play();
+        return;
+    }
+
+    // Load hls.js dynamically if not already loaded
+    if (!window.Hls) {
+        try {
+            await new Promise((resolve, reject) => {
+                const script = document.createElement('script');
+                script.src = '/hls.min.js';
+                script.onload = resolve;
+                script.onerror = reject;
+                document.head.appendChild(script);
+            });
+        } catch {
+            showToast('Failed to load HLS player library', 'error');
+            return;
+        }
+    }
+
+    if (window.Hls && window.Hls.isSupported()) {
+        // Destroy existing HLS instance if any
+        if (videoEl._hlsInstance) {
+            videoEl._hlsInstance.destroy();
+        }
+
+        const hls = new window.Hls({
+            maxBufferLength: 30,
+            maxMaxBufferLength: 60,
+        });
+        videoEl._hlsInstance = hls;
+
+        hls.loadSource(hlsUrl);
+        hls.attachMedia(videoEl);
+        hls.on(window.Hls.Events.MANIFEST_PARSED, () => {
+            if (currentTime > 0) videoEl.currentTime = currentTime;
+            if (!wasPaused) videoEl.play();
+        });
+        hls.on(window.Hls.Events.ERROR, (_, data) => {
+            if (data.fatal) {
+                showToast('HLS playback error', 'error');
+                console.error('HLS fatal error:', data);
+            }
+        });
+    } else {
+        showToast('HLS playback not supported in this browser', 'warning');
+    }
+};
+
 export const Player = (mediaId) => {
     const loggedIn = isLoggedIn();
 
     const html = `
-        <div class="w-full mx-auto px-4 sm:px-6 lg:px-8 py-6 max-w-[1800px] relative">
+        <div class="w-full mx-auto px-4 sm:px-6 lg:px-8 py-6 max-w-[1800px] relative group/player">
             <!-- Theater Glow Ambient Background -->
-            <div id="theater-glow" class="absolute top-0 left-1/2 -translate-x-1/2 w-4/5 h-[80vh] bg-gradient-to-b from-orange-500/10 via-purple-500/5 to-transparent blur-[120px] pointer-events-none -z-10 transition-colors duration-1000"></div>
-
+            <div id="theater-glow" class="absolute top-0 left-1/2 -translate-x-1/2 w-4/5 h-[80vh] bg-gradient-to-b from-orange-500/20 via-purple-500/10 to-transparent blur-[120px] pointer-events-none -z-10 transition-colors duration-1000"></div>
+            
+            <!-- Back Button - Absolute floating -->
+            <button onclick="window.history.back()" class="absolute top-10 left-10 z-40 w-12 h-12 flex items-center justify-center bg-white/40 dark:bg-black/60 hover:bg-white/60 dark:hover:bg-black/80 backdrop-blur-xl text-gray-900 dark:text-white rounded-2xl border border-gray-200 dark:border-white/10 transition-all opacity-60 group-hover/player:opacity-100 hover:scale-110 active:scale-95 shadow-xl">
+                <svg class="w-6 h-6" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" viewBox="0 0 24 24">${ICONS.back}</svg>
+            </button>
             <!-- Video Container -->
-            <div class="relative bg-black rounded-3xl overflow-hidden shadow-[0_30px_100px_-15px_rgba(0,0,0,0.6)] dark:shadow-[0_30px_100px_-15px_rgba(0,0,0,1)] mb-8 border border-gray-200 dark:border-white/10 group z-10 w-full lg:w-[90%] xl:w-[85%] mx-auto transition-transform duration-500 hover:scale-[1.01]">
-                <video id="video-player" class="w-full aspect-video outline-none" controls autoplay>
-                    <source src="${getStreamUrl(mediaId)}">
-                    Your browser does not support the video tag.
-                </video>
+            <div class="relative bg-black rounded-[2.5rem] overflow-hidden shadow-[0_30px_100px_-15px_rgba(0,0,0,0.6)] dark:shadow-[0_30px_100px_-15px_rgba(0,0,0,1)] mb-10 border border-gray-200 dark:border-white/10 group z-10 w-full lg:w-[94%] xl:w-[90%] mx-auto transition-transform duration-500 hover:scale-[1.005]">
+                
+                <video id="video-player" class="w-full aspect-video outline-none" controls autoplay></video>
             </div>
 
             <!-- Media Info -->
@@ -53,15 +119,22 @@ export const Player = (mediaId) => {
 
         const media = res.data;
 
+        // Automatically choose the best stream format
+        if (media.is_transcoded) {
+            switchToHLS(mediaId, video);
+        } else {
+            video.src = getStreamUrl(mediaId);
+        }
+
         // Set glow based on video category
         const glow = document.getElementById('theater-glow');
         if (glow && media.category === 'Movie') {
-            glow.className = glow.className.replace('from-orange-500/10', 'from-blue-500/20').replace('via-purple-500/5', 'via-indigo-500/10');
+            glow.className = glow.className.replace('from-orange-500/20', 'from-blue-500/30').replace('via-purple-500/10', 'via-indigo-500/15');
         }
 
         // Render info
         infoContainer.innerHTML = `
-            <div class="flex flex-col lg:flex-row lg:items-start gap-8 w-full lg:w-[90%] xl:w-[85%] mx-auto bg-white/50 dark:bg-black/20 backdrop-blur-3xl p-6 md:p-8 rounded-3xl border border-gray-200 dark:border-white/5 shadow-xl transition-all">
+            <div class="flex flex-col lg:flex-row lg:items-start gap-8 w-full lg:w-[94%] xl:w-[90%] mx-auto bg-white/70 dark:bg-black/40 backdrop-blur-3xl p-6 md:p-10 rounded-[2.5rem] border border-gray-200 dark:border-white/5 shadow-2xl transition-all">
                 <div class="flex-1 min-w-0">
                     <h1 class="text-3xl md:text-5xl font-black text-gray-900 dark:text-white mb-4 tracking-tight drop-shadow-sm">${media.title || 'Untitled'}</h1>
                     
@@ -82,12 +155,6 @@ export const Player = (mediaId) => {
                     </div>
                 </div>
                 
-                <div class="flex gap-4 flex-shrink-0 mt-2 lg:mt-0">
-                    ${media.is_transcoded ? `
-                    <button id="play-hls-btn" class="px-5 py-3 bg-blue-600/10 text-blue-600 dark:text-blue-400 border border-blue-600/20 rounded-2xl text-sm font-black uppercase tracking-wider hover:bg-blue-600 hover:text-white transition-all flex items-center gap-2 shadow-lg hover:shadow-blue-600/30">
-                        <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path d="M5 3l14 9-14 9V3z"/></svg>
-                        HLS Stream
-                    </button>` : ''}
                 </div>
             </div>
         `;

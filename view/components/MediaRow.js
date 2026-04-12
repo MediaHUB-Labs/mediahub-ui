@@ -1,33 +1,39 @@
 import { MediaCard } from './MediaCard.js';
+import { ICONS } from '../../src/utils/icons.js';
 
 /**
  * Horizontal scrollable media row with title and "View All" link.
- * Used on the home page for sections like "Continue Watching", "Recently Added".
  */
 export const MediaRow = (title, items, viewAllLink = '#', emptyMsg = 'Nothing here yet') => {
     if (!items || items.length === 0) {
         return `
-        <section class="mb-8">
-            <div class="flex justify-between items-center mb-4">
-                <h3 class="text-xl font-bold text-gray-900 dark:text-white">${title}</h3>
+        <section class="mb-12">
+            <div class="flex justify-between items-center mb-6">
+                <h3 class="text-xl font-black text-gray-900 dark:text-white tracking-tight">${title}</h3>
             </div>
-            <div class="flex items-center justify-center py-10 bg-gray-50 dark:bg-white/[0.02] rounded-2xl border border-dashed border-gray-200 dark:border-white/5">
-                <p class="text-gray-400 dark:text-gray-500 text-sm">${emptyMsg}</p>
+            <div class="flex items-center justify-center py-10 bg-gray-50 dark:bg-white/[0.02] rounded-3xl border border-dashed border-gray-200 dark:border-white/5">
+                <p class="text-gray-400 dark:text-gray-500 text-sm font-medium">${emptyMsg}</p>
             </div>
         </section>`;
     }
 
     return `
-    <section class="mb-8">
-        <div class="flex justify-between items-center mb-4">
-            <h3 class="text-xl font-bold text-gray-900 dark:text-white">${title}</h3>
+    <section class="mb-12 group/row">
+        <div class="flex justify-between items-end mb-6">
+            <div>
+                <h3 class="text-2xl font-black text-gray-900 dark:text-white tracking-tighter">${title}</h3>
+                <div class="h-1 w-12 bg-orange-500 mt-1 rounded-full opacity-0 group-hover/row:opacity-100 transition-opacity duration-500"></div>
+            </div>
             ${viewAllLink !== '#' ? `
-                <a href="${viewAllLink}" data-link class="text-sm text-orange-600 dark:text-yellow-500 hover:underline font-medium">View All →</a>
+                <a href="${viewAllLink}" data-link class="text-xs font-black uppercase tracking-widest text-orange-600 dark:text-yellow-500 hover:text-orange-500 dark:hover:text-yellow-400 transition-colors flex items-center gap-1 pb-1">
+                    View All
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" viewBox="0 0 24 24">${ICONS.back.replace('L15 19l-7-7 7-7', 'M9 5l7 7-7 7')}</svg>
+                </a>
             ` : ''}
         </div>
-        <div class="flex gap-4 overflow-x-auto pb-4 scrollbar-hide snap-x snap-mandatory" style="scrollbar-width: none; -ms-overflow-style: none;">
+        <div class="flex gap-5 overflow-x-auto pb-6 scrollbar-hide snap-x snap-mandatory px-0.5" style="scrollbar-width: none; -ms-overflow-style: none;">
             ${items.map(item => `
-                <div class="flex-shrink-0 w-36 sm:w-40 md:w-44 snap-start">
+                <div class="flex-shrink-0 w-40 sm:w-44 md:w-48 snap-start hover:scale-[1.02] transition-transform duration-300">
                     ${MediaCard(item)}
                 </div>
             `).join('')}
@@ -36,7 +42,7 @@ export const MediaRow = (title, items, viewAllLink = '#', emptyMsg = 'Nothing he
 };
 
 /**
- * Continue Watching row — shows progress bars on each card.
+ * Continue Watching row — shows progress bars and Resume buttons on each card.
  */
 export const ContinueWatchingRow = (items) => {
     if (!items || items.length === 0) return '';
@@ -52,45 +58,63 @@ export const ContinueWatchingRow = (items) => {
         const link = isAudio ? '#' : `/player/${media.id}`;
 
         return `
-        <div class="flex-shrink-0 w-48 sm:w-56 md:w-64 snap-start">
-            <a href="${link}" ${!isAudio ? 'data-link' : ''} class="group cursor-pointer block" data-media-id="${media.id}" data-media-type="${isAudio ? 'audio' : 'video'}">
-                <div class="relative aspect-video bg-gray-100 dark:bg-white/5 rounded-xl overflow-hidden border border-gray-200 dark:border-white/5 group-hover:border-orange-500 dark:group-hover:border-yellow-500/50 transition-all">
+        <div class="flex-shrink-0 w-64 sm:w-72 md:w-80 snap-start group/card">
+            <a href="${link}" ${!isAudio ? 'data-link' : ''} class="block" data-media-id="${media.id}" data-media-type="${isAudio ? 'audio' : 'video'}">
+                <div class="relative aspect-video bg-gray-200 dark:bg-zinc-900 rounded-[24px] overflow-hidden border border-gray-200 dark:border-white/5 ring-1 ring-black/5 dark:ring-white/5 group-hover/card:ring-orange-500/50 transition-all duration-500 shadow-sm hover:shadow-2xl">
                     ${media.thumbnail_path ? `
-                        <img src="/api/media/thumbnail/${media.id}" class="w-full h-full object-cover" alt="${media.title}" loading="lazy"
-                            onerror="this.style.display='none'">
+                        <img src="${CONFIG.API_BASE_URL}${CONFIG.ENDPOINTS.MEDIA_THUMBNAIL}/${media.id}" class="w-full h-full object-cover group-hover/card:scale-110 transition-transform duration-1000 ease-out" alt="${media.title}" loading="lazy" onerror="this.src='https://images.unsplash.com/photo-1485846234645-a62644f84728?q=80&w=2059&auto=format&fit=crop'">
                     ` : `
-                        <div class="w-full h-full flex items-center justify-center">
-                            <svg class="w-10 h-10 text-gray-300 dark:text-white/10" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24">
-                                <path d="M15 10l4.553-2.276A1 1 0 0121 8.618v6.764a1 1 0 01-1.447.894L15 14M5 18h8a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v8a2 2 0 002 2z" />
+                        <div class="w-full h-full flex flex-col items-center justify-center bg-gradient-to-br from-zinc-100 to-zinc-200 dark:from-zinc-800 dark:to-zinc-900">
+                             <svg class="w-12 h-12 text-zinc-400 dark:text-zinc-700" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" viewBox="0 0 24 24">
+                                ${isAudio ? ICONS.music : ICONS.video}
                             </svg>
+                            <span class="text-[10px] uppercase tracking-widest text-zinc-500 font-bold mt-2">No Preview</span>
                         </div>
                     `}
-                    <div class="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
-                        <div class="w-12 h-12 ${isAudio ? 'bg-purple-500 text-white' : 'bg-white text-black'} rounded-full flex items-center justify-center shadow-xl">
-                            <svg class="w-6 h-6 ml-0.5 fill-current" viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></svg>
+                    
+                    <!-- Hover Actions -->
+                    <div class="absolute inset-0 bg-black/60 opacity-0 group-hover/card:opacity-100 transition-opacity flex flex-col items-center justify-center gap-4 backdrop-blur-[2px]">
+                        <div class="w-14 h-14 bg-white text-black rounded-full flex items-center justify-center shadow-2xl scale-90 group-hover/card:scale-100 transition-transform duration-300">
+                             <svg class="w-8 h-8 ml-1" fill="currentColor" viewBox="0 0 24 24">${ICONS.play}</svg>
                         </div>
+                        <span class="text-white text-xs font-black uppercase tracking-widest shadow-lg">Resume Playback</span>
                     </div>
-                    <!-- Progress bar -->
-                    <div class="absolute bottom-0 left-0 right-0 h-1 bg-black/30">
-                        <div class="h-full bg-orange-500 dark:bg-yellow-500 transition-all" style="width: ${percent}%"></div>
+
+                    <!-- Media Type Badge -->
+                    <div class="absolute top-3 left-3 px-2.5 py-1 bg-black/40 backdrop-blur-md rounded-lg border border-white/10 opacity-0 group-hover/card:opacity-100 transition-opacity">
+                        <span class="text-[9px] font-black uppercase tracking-widest text-white">${isAudio ? 'Audio' : 'Video' }</span>
+                    </div>
+
+                    <!-- Progress Bar -->
+                    <div class="absolute bottom-0 left-0 right-0 h-1.5 bg-black/40 backdrop-blur-sm">
+                        <div class="h-full bg-gradient-to-r from-orange-600 to-orange-400 dark:from-yellow-600 dark:to-yellow-400 transition-all duration-700 ease-out" style="width: ${percent}% shadow: 0 0 10px rgba(249, 115, 22, 0.5)"></div>
                     </div>
                 </div>
-                <div class="mt-2 px-0.5">
-                    <h4 class="text-sm font-semibold truncate text-gray-900 dark:text-white">${media.title}</h4>
-                    <p class="text-[11px] text-gray-500 dark:text-gray-400">${percent}% watched</p>
+                <div class="mt-4 px-1">
+                    <div class="flex justify-between items-start gap-3">
+                        <h4 class="text-sm font-bold text-gray-900 dark:text-white truncate flex-1 tracking-tight">${media.title}</h4>
+                        <span class="text-[10px] font-black text-orange-600 dark:text-yellow-500 whitespace-nowrap">${percent}%</span>
+                    </div>
+                    <p class="text-[10px] text-gray-500 dark:text-zinc-500 uppercase tracking-widest font-bold mt-1">${media.category || (isAudio ? 'Music' : 'Movies')}</p>
                 </div>
             </a>
         </div>`;
     }).join('');
 
     return `
-    <section class="mb-8">
-        <div class="flex justify-between items-center mb-4">
-            <h3 class="text-xl font-bold text-gray-900 dark:text-white">
-                <span class="text-orange-600 dark:text-yellow-500">▶</span> Continue Watching
-            </h3>
+    <section class="mb-16 group/watching">
+        <div class="flex justify-between items-center mb-8">
+            <div class="flex items-center gap-3">
+                <div class="w-10 h-10 bg-orange-100 dark:bg-orange-500/10 rounded-xl flex items-center justify-center text-orange-600 dark:text-orange-500">
+                     <svg class="w-6 h-6" fill="currentColor" viewBox="0 0 24 24">${ICONS.play}</svg>
+                </div>
+                <div>
+                   <h3 class="text-2xl font-black text-gray-900 dark:text-white tracking-tighter">Continue Watching</h3>
+                   <p class="text-[10px] text-gray-400 dark:text-zinc-500 font-bold uppercase tracking-[0.2em] -mt-1">Pick up where you left off</p>
+                </div>
+            </div>
         </div>
-        <div class="flex gap-4 overflow-x-auto pb-4 snap-x snap-mandatory" style="scrollbar-width: none; -ms-overflow-style: none;">
+        <div class="flex gap-6 overflow-x-auto pb-8 snap-x snap-mandatory px-1 scrollbar-hide" style="scrollbar-width: none; -ms-overflow-style: none;">
             ${cards}
         </div>
     </section>`;
