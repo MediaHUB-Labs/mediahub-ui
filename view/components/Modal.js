@@ -4,7 +4,7 @@
  */
 
 /** Open a modal with given title and HTML content */
-export const openModal = (title, contentHtml, onClose) => {
+export const openModal = (title, contentHtml, onClose, sizeClass = 'max-w-lg') => {
     // Remove any existing modal
     closeModal();
 
@@ -12,8 +12,8 @@ export const openModal = (title, contentHtml, onClose) => {
     overlay.id = 'modal-overlay';
     overlay.className = 'fixed inset-0 z-50 flex items-center justify-center p-4 animate-in fade-in duration-200';
     overlay.innerHTML = `
-        <div class="absolute inset-0 bg-black/60 backdrop-blur-sm" id="modal-backdrop"></div>
-        <div class="relative bg-white dark:bg-[#1a1a1a] rounded-3xl border border-gray-200 dark:border-white/10 shadow-2xl w-full max-w-lg max-h-[85vh] overflow-hidden transform scale-95 opacity-0 transition-all duration-300" id="modal-content">
+        <div class="absolute inset-0 bg-black/70 backdrop-blur-md" id="modal-backdrop"></div>
+        <div class="relative bg-white dark:bg-[#121212] rounded-[2rem] border border-gray-200 dark:border-white/10 shadow-2xl w-full ${sizeClass} max-h-[90vh] overflow-hidden transform scale-95 opacity-0 transition-all duration-300" id="modal-content">
             <div class="flex items-center justify-between px-6 py-4 border-b border-gray-100 dark:border-white/5">
                 <h3 class="text-lg font-bold text-gray-900 dark:text-white">${title}</h3>
                 <button id="modal-close-btn" class="p-1.5 rounded-xl hover:bg-gray-100 dark:hover:bg-white/10 text-gray-400 hover:text-gray-900 dark:hover:text-white transition-all">
@@ -43,7 +43,7 @@ export const openModal = (title, contentHtml, onClose) => {
     // Close handlers
     const handleClose = () => {
         closeModal();
-        if (onClose) onClose();
+        if (typeof onClose === 'function') onClose();
     };
 
     document.getElementById('modal-close-btn')?.addEventListener('click', handleClose);
