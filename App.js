@@ -15,7 +15,7 @@ import { Profile } from './view/pages/Profile.js';
 import { EditMedia } from './view/pages/EditMedia.js';
 import { initTheme } from './src/utils/theme.js';
 import { isLoggedIn } from './src/utils/auth.js';
-import { post } from './src/global/api.js';
+import { post, get } from './src/global/api.js';
 import { CONFIG } from './src/global/config.js';
 import { showToast } from './view/components/Toast.js';
 
@@ -30,6 +30,9 @@ export const App = {
         
         this.handleNavigation();
         this.router();
+
+        // Start polling if there are active transcode jobs
+        this.startTranscodePolling();
 
         window.addEventListener('popstate', () => this.router());
     },
@@ -121,7 +124,7 @@ export const App = {
 
     handleNavigation() {
         document.addEventListener('click', async (e) => {
-            const transcodeBtn = e.target.closest('.transcode-grid-btn');
+            const transcodeBtn = e.target.closest('.transcode-grid-btn, #transcode-btn');
             if (transcodeBtn) {
                 e.preventDefault();
                 e.stopPropagation();
@@ -146,6 +149,9 @@ export const App = {
                 transcodeBtn.innerText = 'Transcoding...';
                 transcodeBtn.classList.add('animate-pulse');
                 
+                // Trigger polling immediately
+                this.startTranscodePolling();
+                
                 return;
             }
 
@@ -168,6 +174,99 @@ export const App = {
     /** Re-render the header (e.g., after login/logout to update user state) */
     refreshHeader() {
         this.renderComponent('header-container', Header());
+    },
+
+    startTranscodePolling() {
+        if (this.transcodePollingInterval) return;
+
+        const poll = async () => {
+            const res = await get(CONFIG.ENDPOINTS.TRANSCODE_STATUS);
+            if (res?.success && res.data) {
+                const jobs = res.data.job_progress || {};
+                const activeIds = Object.keys(jobs);
+
+                if (activeIds.length === 0) {
+                    clearInterval(this.transcodePollingInterval);
+                    this.transcodePollingInterval = null;
+                    
+                    const anyVisible = document.querySelector('[id^="transcode-status-"]:not(.opacity-0)');
+                    if (anyVisible) {
+                        this.router();
+                    }
+                    return;
+                }
+
+                this.updateTranscodeUI(jobs);
+            }
+        };
+
+        // Execute immediately then start interval
+        poll();
+        this.transcodePollingInterval = setInterval(poll, 2000);
+    },
+
+    updateTranscodeUI(jobs) {
+        // Update all instances of active jobs
+        Object.entries(jobs).forEach(([mediaId, progress]) => {
+            const roundedProgress = Math.round(progress);
+
+            // 1. Update Progress Bars
+            const barContainers = document.querySelectorAll(`.transcode-status-container[data-media-id="${mediaId}"]`);
+            barContainers.forEach(container => {
+                container.classList.remove('opacity-0', 'pointer-events-none');
+                container.classList.add('opacity-100');
+                const bar = container.querySelector('.progress-bar');
+                if (bar) bar.style.width = `${progress}%`;
+            });
+
+            // 2. Update Badge Labels & Hide Trigger Buttons
+            const badgeContainers = document.querySelectorAll(`.transcode-badge-container[data-media-id="${mediaId}"]`);
+            badgeContainers.forEach(container => {
+                container.classList.remove('opacity-0', 'pointer-events-none');
+                container.classList.add('opacity-100');
+                const percentLabel = container.querySelector('.progress-percent');
+                if (percentLabel) percentLabel.textContent = `${roundedProgress}%`;
+            });
+
+            // Hide/Disable the actual trigger button to prevent overlapping and duplicate triggers
+            const triggerBtns = document.querySelectorAll(`.transcode-btn-${mediaId}, .transcode-grid-btn[data-media-id="${mediaId}"], #transcode-btn`);
+            triggerBtns.forEach(btn => {
+                if (btn.id === 'transcode-btn') {
+                    btn.disabled = true;
+                    btn.textContent = 'Transcoding...';
+                    btn.classList.add('opacity-50', 'cursor-not-allowed');
+                } else {
+                    btn.classList.add('hidden');
+                }
+            });
+        });
+
+        // Restore UI when jobs complete
+        document.querySelectorAll('.transcode-status-container, .transcode-badge-container').forEach(el => {
+            if (el.classList.contains('opacity-0')) return;
+            const id = el.getAttribute('data-media-id');
+            if (!jobs[id]) {
+                el.classList.add('opacity-0', 'pointer-events-none');
+                
+                // Show/Enable the trigger buttons again
+                const triggerBtns = document.querySelectorAll(`.transcode-btn-${id}, .transcode-grid-btn[data-media-id="${id}"], #transcode-btn`);
+                triggerBtns.forEach(btn => {
+                    if (btn.id === 'transcode-btn') {
+                        btn.disabled = false;
+                        btn.innerHTML = '<svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" viewBox="0 0 24 24"><path d="M12 4v16m8-8H4"></path></svg> Convert to HLS';
+                        btn.classList.remove('opacity-50', 'cursor-not-allowed');
+                    } else {
+                        btn.classList.remove('hidden');
+                    }
+                });
+                
+                // If this item was just finished and we are on its edit page, refresh to show HLS badge
+                const currentIdFromUrl = window.location.pathname.split('/').pop();
+                if (currentIdFromUrl === id && window.location.pathname.includes('/edit/')) {
+                     setTimeout(() => this.router(), 1500);
+                }
+            }
+        });
     }
 };
 

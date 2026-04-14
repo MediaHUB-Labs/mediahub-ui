@@ -9,21 +9,22 @@ import { ICONS } from '../../src/utils/icons.js';
  */
 export const MediaCard = (media) => {
     const loggedIn = isLoggedIn();
-    const isVideo = media.mime_type?.startsWith('video/') || media.type === 'video';
-    const isAudio = media.mime_type?.startsWith('audio/') || media.type === 'audio';
-    const isImage = media.mime_type?.startsWith('image/') || media.type === 'image';
+    const isVideo = media.mime_type?.startsWith('video/') || media.media_type === 'video';
+    const isAudio = media.mime_type?.startsWith('audio/') || media.media_type === 'audio';
+    const isImage = media.mime_type?.startsWith('image/') || media.media_type === 'image';
     const isDoc = !isVideo && !isAudio && !isImage;
 
     // Determine the link
+    const mediaId = media.id || media.ID;
     let link = '#';
-    if (isVideo) link = `/player/${media.id}`;
+    if (isVideo) link = `/player/${mediaId}`;
     else if (isImage) link = '#'; // handled by lightbox
     else if (isAudio) link = '#'; // handled by audio player
 
     // Determine thumbnail
     let thumbnailHtml = '';
     if (media.thumbnail_path) {
-        thumbnailHtml = `<img src="${CONFIG.API_BASE_URL}${CONFIG.ENDPOINTS.MEDIA_THUMBNAIL}/${media.id}?token=${localStorage.getItem('token')}" 
+        thumbnailHtml = `<img src="${CONFIG.API_BASE_URL}${CONFIG.ENDPOINTS.MEDIA_THUMBNAIL}/${mediaId}?token=${localStorage.getItem('token')}" 
             class="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110" alt="${media.title}" loading="lazy" 
             onerror="this.style.display='none';this.nextElementSibling.style.display='flex'">`;
     }
@@ -34,14 +35,14 @@ export const MediaCard = (media) => {
 
     // Determine display type based on category or mime_type
     let displayType = media.category || 'File';
-    if (media.type === 'video' && !media.category) displayType = 'Video';
-    if (media.type === 'audio' && !media.category) displayType = 'Audio';
+    if (media.media_type === 'video' && !media.category) displayType = 'Video';
+    if (media.media_type === 'audio' && !media.category) displayType = 'Audio';
 
     const aspectClass = (isAudio || isImage) ? 'aspect-square' : 'aspect-[16/9] md:aspect-[2/3]';
     const duration = (isVideo || isAudio) && media.duration_sec ? formatDuration(media.duration_sec) : '';
 
     return `
-    <div class="group relative media-card animate-in fade-in duration-500" data-media-id="${media.id}" data-media-type="${iconKey}">
+    <div class="group relative media-card animate-in fade-in duration-500" data-media-id="${mediaId}" data-media-type="${iconKey}">
         <div class="relative ${aspectClass} bg-gray-100 dark:bg-white/[0.03] rounded-2xl overflow-hidden border border-gray-200 dark:border-white/5 group-hover:border-orange-500 transition-all duration-300 shadow-sm">
             ${thumbnailHtml}
             <div class="absolute inset-0 flex items-center justify-center bg-gray-100 dark:bg-zinc-800/50 ${media.thumbnail_path ? 'hidden' : ''}" style="${media.thumbnail_path ? 'display:none' : ''}">
@@ -59,7 +60,7 @@ export const MediaCard = (media) => {
                     Play
                 </a>
                 ${loggedIn ? `
-                <a href="/edit/${media.id}" data-link class="w-32 py-2.5 bg-black/60 text-white border border-white/20 rounded-xl font-bold text-xs flex items-center justify-center gap-2 hover:bg-white hover:text-black transition-all transform translate-y-2 group-hover:translate-y-0 backdrop-blur-md">
+                <a href="/edit/${mediaId}" data-link class="w-32 py-2.5 bg-black/60 text-white border border-white/20 rounded-xl font-bold text-xs flex items-center justify-center gap-2 hover:bg-white hover:text-black transition-all transform translate-y-2 group-hover:translate-y-0 backdrop-blur-md">
                     <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" viewBox="0 0 24 24">${ICONS.edit}</svg>
                     Edit
                 </a>
@@ -77,7 +78,22 @@ export const MediaCard = (media) => {
             </div>` : ''}
 
             ${isVideo && !media.is_transcoded && loggedIn ? `
-            <button class="absolute top-2 right-2 bg-black/60 hover:bg-violet-600 text-white text-[10px] font-bold uppercase px-2.5 py-1.5 rounded-xl backdrop-blur-sm transition-all shadow-lg border border-white/10 z-20 transcode-grid-btn" data-media-id="${media.id}">
+            <!-- Converting Badge (Top Right) -->
+            <div id="transcode-badge-${mediaId}" class="absolute top-2 right-2 transcode-badge-container opacity-0 pointer-events-none transition-all duration-500 z-30" data-media-id="${mediaId}">
+                <div class="bg-violet-600/95 text-white text-[9px] font-black uppercase px-2 py-1 rounded-lg backdrop-blur-md shadow-lg border border-white/20 flex items-center gap-1.5 animate-pulse">
+                    <svg class="w-2.5 h-2.5 animate-spin" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path></svg>
+                    Converting <span class="progress-percent">0%</span>
+                </div>
+            </div>
+
+            <!-- Bottom Progress Line (Premium) -->
+            <div class="transcode-status-container absolute bottom-0 left-0 right-0 h-2 bg-black/60 backdrop-blur-md opacity-0 pointer-events-none transition-all duration-700 z-40 border-t border-white/10 rounded-b-2xl" data-media-id="${mediaId}">
+                <div class="progress-bar h-full bg-gradient-to-r from-violet-600 via-indigo-500 to-fuchsia-500 transition-all duration-500 shadow-[0_0_20px_rgba(139,92,246,0.4)] relative overflow-hidden" style="width: 0%">
+                    <div class="absolute inset-0 bg-gradient-to-r from-transparent via-white/30 to-transparent animate-shimmer" style="background-size: 200% 100%"></div>
+                </div>
+            </div>
+            
+            <button class="absolute top-2 right-2 bg-black/60 hover:bg-violet-600 text-white text-[10px] font-bold uppercase px-2.5 py-1.5 rounded-xl backdrop-blur-sm transition-all shadow-lg border border-white/10 z-20 transcode-grid-btn transcode-btn-${mediaId}" data-media-id="${mediaId}">
                 HLS
             </button>
             ` : ''}
