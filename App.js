@@ -31,8 +31,10 @@ export const App = {
         this.handleNavigation();
         this.router();
 
-        // Start polling if there are active transcode jobs
-        this.startTranscodePolling();
+        // Start polling only if logged in and there may be active transcode jobs
+        if (isLoggedIn()) {
+            this.startTranscodePolling();
+        }
 
         window.addEventListener('popstate', () => this.router());
     },
@@ -179,25 +181,42 @@ export const App = {
     startTranscodePolling() {
         if (this.transcodePollingInterval) return;
 
+        // Track consecutive API failures to auto-stop polling if the backend is unreachable
+        this._transcodeFailCount = 0;
+        const MAX_FAILURES = 5;
+
         const poll = async () => {
             const res = await get(CONFIG.ENDPOINTS.TRANSCODE_STATUS);
-            if (res?.success && res.data) {
-                const jobs = res.data.job_progress || {};
-                const activeIds = Object.keys(jobs);
 
-                if (activeIds.length === 0) {
+            if (!res?.success || !res.data) {
+                // Count failures and stop polling after too many consecutive errors
+                this._transcodeFailCount = (this._transcodeFailCount || 0) + 1;
+                if (this._transcodeFailCount >= MAX_FAILURES) {
+                    console.warn('[MediaHUB] Transcode status unreachable — stopping poll.');
                     clearInterval(this.transcodePollingInterval);
                     this.transcodePollingInterval = null;
-                    
-                    const anyVisible = document.querySelector('[id^="transcode-status-"]:not(.opacity-0)');
-                    if (anyVisible) {
-                        this.router();
-                    }
-                    return;
                 }
-
-                this.updateTranscodeUI(jobs);
+                return;
             }
+
+            // Reset failure counter on a good response
+            this._transcodeFailCount = 0;
+
+            const jobs = res.data.job_progress || {};
+            const activeIds = Object.keys(jobs);
+
+            if (activeIds.length === 0) {
+                clearInterval(this.transcodePollingInterval);
+                this.transcodePollingInterval = null;
+
+                const anyVisible = document.querySelector('[id^="transcode-status-"]:not(.opacity-0)');
+                if (anyVisible) {
+                    this.router();
+                }
+                return;
+            }
+
+            this.updateTranscodeUI(jobs);
         };
 
         // Execute immediately then start interval
@@ -260,10 +279,17 @@ export const App = {
                     }
                 });
                 
-                // If this item was just finished and we are on its edit page, refresh to show HLS badge
+                // If this item was just finished and we are on its edit page, refresh to show HLS badge.
+                // Use a per-job guard to prevent scheduling multiple router() calls for the same job.
                 const currentIdFromUrl = window.location.pathname.split('/').pop();
                 if (currentIdFromUrl === id && window.location.pathname.includes('/edit/')) {
-                     setTimeout(() => this.router(), 1500);
+                    if (!this._pendingRouterRefresh) {
+                        this._pendingRouterRefresh = true;
+                        setTimeout(() => {
+                            this._pendingRouterRefresh = false;
+                            this.router();
+                        }, 1500);
+                    }
                 }
             }
         });

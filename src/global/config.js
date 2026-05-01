@@ -1,5 +1,5 @@
 export const CONFIG = {
-    API_BASE_URL: "http://192.168.0.108:9123/api",
+    API_BASE_URL: "http://localhost:9123/api",
     ENDPOINTS: {
         // Health
         HEALTH: "/health",

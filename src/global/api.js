@@ -21,7 +21,11 @@ const handleResponse = async (response) => {
     if (response.status === 401) {
         localStorage.removeItem('token');
         localStorage.removeItem('user');
-        window.location.href = '/login';
+        // Only redirect if not already on a public auth page to prevent redirect loops
+        const path = window.location.pathname;
+        if (path !== '/login' && path !== '/signup') {
+            window.location.href = '/login';
+        }
         return null;
     }
     
