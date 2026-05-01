@@ -20,7 +20,7 @@ export const Movies = () => {
                         <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="3" viewBox="0 0 24 24"><path d="M15 19l-7-7 7-7"/></svg>
                     </a>
                     <div class="flex items-center gap-4">
-                        <div class="w-12 h-12 bg-blue-600 rounded-2xl flex items-center justify-center shadow-lg shadow-blue-500/20">
+                        <div class="w-12 h-12 bg-blue-600 rounded-2xl hidden md:flex items-center justify-center shadow-lg shadow-blue-500/20">
                             <svg class="w-6 h-6 text-white" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" viewBox="0 0 24 24">${ICONS.movie}</svg>
                         </div>
                         <div>
@@ -48,13 +48,6 @@ export const Movies = () => {
                             class="w-full pl-10 pr-4 py-2 bg-gray-50 dark:bg-white/5 border border-gray-200 dark:border-white/10 rounded-xl text-sm text-gray-900 dark:text-white focus:ring-2 focus:ring-orange-500 dark:focus:ring-yellow-500 outline-none transition placeholder-gray-400 dark:placeholder-gray-500">
                     </div>
                 </div>
-                <select id="movies-category" class="bg-gray-50 dark:bg-white/5 border border-gray-200 dark:border-white/10 rounded-xl px-4 py-2 text-sm text-gray-900 dark:text-white outline-none cursor-pointer">
-                    <option value="">All Categories</option>
-                </select>
-                <div class="flex gap-1 bg-gray-100 dark:bg-white/5 p-1 rounded-xl border border-gray-200 dark:border-white/10">
-                    <button id="view-grid" class="px-3 py-1.5 rounded-lg text-xs font-bold text-orange-600 dark:text-yellow-500 bg-white dark:bg-white/10 shadow-sm">Grid</button>
-                    <button id="view-list" class="px-3 py-1.5 rounded-lg text-xs font-medium text-gray-500 hover:text-gray-900 dark:hover:text-white transition">List</button>
-                </div>
             </div>
 
             <!-- Content -->
@@ -76,18 +69,6 @@ export const Movies = () => {
         const limit = 24;
         let allItems = [];
         let searchTimeout = null;
-
-        // Load categories
-        const catRes = await get(CONFIG.ENDPOINTS.MEDIA_CATEGORIES);
-        if (catRes?.success && catRes.data?.categories) {
-            const select = document.getElementById('movies-category');
-            catRes.data.categories.forEach(cat => {
-                const opt = document.createElement('option');
-                opt.value = cat;
-                opt.textContent = cat;
-                select.appendChild(opt);
-            });
-        }
 
         // Load movies
         const loadMovies = async (reset = false) => {
@@ -140,8 +121,6 @@ export const Movies = () => {
             clearTimeout(searchTimeout);
             searchTimeout = setTimeout(() => doSearch(e.target.value), 400);
         });
-
-        document.getElementById('movies-category')?.addEventListener('change', () => loadMovies(true));
 
         document.getElementById('load-more-btn')?.addEventListener('click', () => {
             currentOffset += limit;

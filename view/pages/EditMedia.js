@@ -38,7 +38,7 @@ export const EditMedia = (mediaId) => {
                     </div>
                 </div>
                 <div class="space-y-6 animate-pulse">
-                    <div class="aspect-[2/3] bg-gray-200 dark:bg-white/5 rounded-2xl"></div>
+                    <div class="aspect-[2/2] bg-gray-200 dark:bg-white/5 rounded-2xl"></div>
                     <div class="h-24 bg-gray-200 dark:bg-white/5 rounded-xl"></div>
                 </div>
             </div>
@@ -128,7 +128,7 @@ export const EditMedia = (mediaId) => {
 
             <!-- Side Info -->
             <div class="space-y-6">
-                <div class="${iconBgColors[iconType]} rounded-3xl overflow-hidden shadow-2xl aspect-[2/3] relative flex items-center justify-center p-8 group">
+                <div class="${iconBgColors[iconType]} rounded-3xl overflow-hidden shadow-2xl aspect-[2/2] relative flex items-center justify-center p-8 group">
                     <div class="w-24 h-24 bg-white/20 rounded-full flex items-center justify-center backdrop-blur-md shadow-2xl transform group-hover:scale-110 transition-transform duration-500">
                         <svg class="w-12 h-12 text-white" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" viewBox="0 0 24 24">
                             ${ICONS[iconType]}

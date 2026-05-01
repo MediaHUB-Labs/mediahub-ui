@@ -21,10 +21,10 @@ export const Footer = () => {
                     <div class="md:col-span-4 lg:col-span-2">
                         <h4 class="text-xs font-black uppercase tracking-widest text-gray-900 dark:text-white mb-6">Library</h4>
                         <ul class="text-gray-500 dark:text-gray-400 text-sm space-y-3">
-                            <li><a href="/movies" data-link class="hover:text-orange-600 dark:hover:text-yellow-500 transition-colors flex items-center gap-2">🎬 Movies</a></li>
-                            <li><a href="/music" data-link class="hover:text-orange-600 dark:hover:text-yellow-500 transition-colors flex items-center gap-2">🎵 Music</a></li>
-                            <li><a href="/videos" data-link class="hover:text-orange-600 dark:hover:text-yellow-500 transition-colors flex items-center gap-2">📹 Videos</a></li>
-                            <li><a href="/photos" data-link class="hover:text-orange-600 dark:hover:text-yellow-500 transition-colors flex items-center gap-2">📸 Photos</a></li>
+                            <li><a href="/movies" data-link class="hover:text-orange-600 dark:hover:text-yellow-500 transition-colors flex items-center gap-2">Movies</a></li>
+                            <li><a href="/music" data-link class="hover:text-orange-600 dark:hover:text-yellow-500 transition-colors flex items-center gap-2">Music</a></li>
+                            <li><a href="/videos" data-link class="hover:text-orange-600 dark:hover:text-yellow-500 transition-colors flex items-center gap-2">Videos</a></li>
+                            <li><a href="/photos" data-link class="hover:text-orange-600 dark:hover:text-yellow-500 transition-colors flex items-center gap-2">Photos</a></li>
                         </ul>
                     </div>
 

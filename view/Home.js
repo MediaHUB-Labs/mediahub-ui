@@ -47,8 +47,6 @@ export const Home = () => {
                     <div id="section-music"></div>
                 </div>
             </div>
-
-            <div class="h-20"></div>
         </div>
     `;
 
