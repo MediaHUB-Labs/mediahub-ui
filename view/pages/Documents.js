@@ -24,7 +24,7 @@ export const Documents = () => {
                             <svg class="w-6 h-6 text-white" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" viewBox="0 0 24 24">${ICONS.doc}</svg>
                         </div>
                         <div>
-                            <h1 class="text-3xl font-extrabold text-gray-900 dark:text-white tracking-tight">Portfolio</h1>
+                            <h1 class="text-3xl font-extrabold text-gray-900 dark:text-white tracking-tight">Documents</h1>
                             <p class="text-gray-500 dark:text-gray-400 text-sm mt-1">Manage documents and archives</p>
                         </div>
                     </div>
@@ -115,7 +115,7 @@ export const Documents = () => {
                     const id = parseInt(btn.dataset.id);
                     const doc = docs.find(d => d.id === id);
                     if (doc) showDoc(doc);
-                    
+
                     // Highlight active
                     container.querySelectorAll('.doc-item').forEach(i => i.classList.remove('bg-amber-50', 'dark:bg-amber-500/10', 'ring-1', 'ring-amber-500/20'));
                     btn.classList.add('bg-amber-50', 'dark:bg-amber-500/10', 'ring-1', 'ring-amber-500/20');
@@ -134,10 +134,10 @@ export const Documents = () => {
 
             placeholder.classList.add('hidden');
             content.classList.remove('hidden');
-            
+
             title.textContent = doc.title;
             meta.textContent = `${doc.category || 'Document'} • ${doc.mime_type}`;
-            
+
             const fileUrl = `${CONFIG.API_BASE_URL}${CONFIG.ENDPOINTS.MEDIA_STREAM}/${doc.id}?token=${localStorage.getItem('token')}`;
             iframe.src = fileUrl;
             download.href = fileUrl;
@@ -156,8 +156,8 @@ export const Documents = () => {
 
         document.getElementById('doc-search')?.addEventListener('input', (e) => {
             const q = e.target.value.toLowerCase();
-            const filtered = allDocs.filter(d => 
-                d.title?.toLowerCase().includes(q) || 
+            const filtered = allDocs.filter(d =>
+                d.title?.toLowerCase().includes(q) ||
                 d.category?.toLowerCase().includes(q)
             );
             renderList(filtered);

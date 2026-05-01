@@ -54,7 +54,7 @@ export const MediaCard = (media) => {
             </div>
             
             <!-- Hover overlay -->
-            <div class="absolute inset-0 bg-black/40 backdrop-blur-[2px] opacity-0 group-hover:opacity-100 transition-all duration-300 flex flex-col items-center justify-center gap-3">
+            <div class="absolute inset-0 bg-black/40 backdrop-blur-[2px] md:opacity-0 group-hover:opacity-100 transition-all duration-300 flex flex-col items-center justify-center gap-3">
                 <a href="${link}" ${link !== '#' ? 'data-link' : ''} class="w-32 py-2.5 bg-white text-black rounded-xl font-bold text-xs flex items-center justify-center gap-2 hover:bg-orange-500 hover:text-white transition-all transform translate-y-2 group-hover:translate-y-0 shadow-xl">
                     <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 24 24">${ICONS.play}</svg>
                     Play
@@ -99,7 +99,7 @@ export const MediaCard = (media) => {
             ` : ''}
         </div>
         <div class="mt-2.5 px-0.5">
-            <h4 class="text-sm font-semibold truncate text-gray-900 dark:text-white">${media.title || 'Untitled'}</h4>
+            <h4 class="text-sm font-semibold truncate text-gray-900 dark:text-white" title="${media.title || 'Untitled'}">${media.title || 'Untitled'}</h4>
             <div class="flex items-center gap-2 mt-0.5">
                 <span class="text-[10px] font-bold uppercase tracking-wider text-gray-400 dark:text-gray-500 px-1.5 py-0.5 bg-gray-100 dark:bg-white/5 rounded-md border border-gray-200 dark:border-white/5">${displayType}</span>
                 <span class="text-xs text-gray-500 dark:text-gray-400 truncate">${media.genres || ''}</span>

@@ -62,7 +62,7 @@ export const showUploadModal = (onSuccess) => {
 
                 <!-- Drop Zone / File Selection -->
                 <div id="drop-zone" class="relative group border-2 border-dashed border-gray-200 dark:border-white/10 rounded-[2.5rem] p-12 text-center bg-gray-50/50 dark:bg-white/[0.02] hover:border-orange-500/50 dark:hover:border-yellow-500/50 hover:bg-white dark:hover:bg-white/5 transition-all cursor-pointer shadow-sm overflow-hidden min-h-[160px] flex flex-col items-center justify-center">
-                    <input type="file" id="upload-file-input" class="absolute inset-0 w-full h-full opacity-0 cursor-pointer" accept="${t.accept}">
+                    <input type="file" id="upload-file-input" class="absolute inset-0 w-full h-full opacity-0 cursor-pointer z-[10]" accept="${t.accept}">
                     
                     <div id="drop-zone-content" class="${selectedFile ? 'hidden' : 'space-y-4'}">
                         <div class="w-16 h-16 bg-white dark:bg-white/5 rounded-2xl flex items-center justify-center mx-auto shadow-xl group-hover:scale-110 group-hover:bg-orange-500 dark:group-hover:bg-yellow-500 transition-all duration-300">
